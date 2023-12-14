@@ -15,7 +15,7 @@
             case 2:
                 cardStyle = "col-md-6";
                 break;
-            default:
+            case 3:
                 cardStyle = "col-md-4";
                 break;
         }
@@ -29,10 +29,14 @@
     }
 </style>
 
-<div class="card-buttons-group">
-    <button class="btn btn-danger" id='hideCardsId'>Скрыть</button>
-    <button class='btn btn-success' id='showCardsId'>Показать</button>
-    <button class='btn btn-success' id='addCarId'>Добавить</button>
+<div class="card col-md-12" style="margin: 10px;">
+    <div class="card-buttons-group">
+        <button class='btn btn-primary' id='compareBtnId'>Сравнение</button>
+        @if (User.IsInRole("Admin"))
+        {
+            <button class='btn btn-success' id='addCarId'>Добавить</button>   
+        }
+    </div>
 </div>
 
 <div style="padding: 10px;"></div>
@@ -41,7 +45,7 @@
     <div class="card col-md-12">
         <div class="row g-0">
             <div class="col-md-4">
-                <img src="https://images.wallpaperscraft.ru/image/single/bmw_fary_podsvetka_137326_1280x720.jpg"
+                <img src="https://images.wallpaperscraft.ru/image/single/bmw_fary_podsvetka_137326_1280x720.jpg" 
                      class="img-fluid rounded-start rounded">
             </div>
             <div class="col-md-8">
@@ -84,114 +88,126 @@ else
             <div class="row row-cols-1 @cardStyle text-center">
                 <div class="col" style="padding: 10px;">
                     <div class="card">
-                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(car.Avatar ?? Array.Empty<byte>())" class="card-img-top" alt="@car.Name">
+                        <img src="~/img/Mustang.jpg" class="card-img-top card-image" alt="@car.Name">
                         <div class="card-body">
-                            <h5 class="card-title">@car.Name</h5>
-                            <p class="card-text">@car.Description</p>
+                            <h5 class="card-title">Название: @car.Name</h5>
+                            <p class="card-text">Краткое описание: @car.Description.Substring(0, 40) ...</p>
                         </div>
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item">Стоимость: @car.Price ₽</li>
-                            <li class="list-group-item">@car.TypeCar</li>
+                            <li class="list-group-item">Модель: @car.Model</li>
                         </ul>
                         <div class="card-body">
-                            <button class="btn btn-primary" onclick="openModal(@car.Id)" asp-action="GetCar" value="@car.Id" asp-route-id="@car.Id"
-                                    data-toggle="ajax-modal" data-target="Modal">
-                                Открыть
-                            </button>
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <button asp-controller="Car" asp-action="Delete" asp-route-id="@car.Id" class="btn btn-danger">Удалить</button>
-                            }
+                            <button class="btn btn-primary" onclick="openModal(@car.Id)" asp-action="GetCar" value="@car.Id" asp-route-id="@car.Id" 
+                                    data-toggle="ajax-modal" data-target="Modal">Открыть</button>
+                             @if (User.IsInRole("Admin"))
+                             {
+                                 <a asp-controller="Car" asp-action="Delete" asp-route-id="@car.Id" class="btn btn-danger">Удалить</a>
+                             }
                         </div>
                     </div>
                 </div>
             </div>
         }
-    </div>
+    </div>   
 }
 
 <div class="modal fade" id="modal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Информация об автомобиле</h5>
-            </div>
-            <div class="modal-body">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-close btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                @if (User.IsInRole("Admin"))
-                {
-                    <button type="button" class="btn btn-primary" id="saveBtn">Сохранить</button>
-                }
-            </div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Информация об автомобиле</h5>
+      </div>
+        <div class="modal-body">
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-close btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            @if (User.IsInRole("Admin"))
+            {
+                <button type="button" class="btn btn-primary" id="saveBtn">Сохранить</button>   
+            }
         </div>
     </div>
+  </div>
 </div>
-
 
 @section pageScripts {
 
     <script>
-
+        let modal = $('#modal'); 
+    
         function model() {
             const model = {
                 name: $('input#Name').val(),
                 model: $('input#Model').val(),
                 price: $('input#Price').val(),
-                description: $('input#Description').val()
-            }
+                description: $('input#Description').val(),
+                avatar: $('input#Avatar').val(),
+            }            
             return model;
         };
-
+        
         $('#saveBtn').on('click', function () {
-            $.ajax({
-                url: '@Url.Action("Save")',
-                type: 'POST',
-                data: model(),
-            })
+           $.ajax({
+               url: '@Url.Action("Save")',
+               type: 'POST',
+               data: model(),
+           }) 
         });
-
-        var modal = $('#modal');
-
-        $(".btn-close").click(function () {
+        
+       $('#compareBtnId').on('click', function (){
+           $.ajax({
+               type: 'GET',
+               url : '@Url.Action("Compare")',
+               success: function (response) {
+                   $('.modal-dialog').addClass("modal-lg");
+                   modal.find(".modal-body").html(response);
+                   modal.modal('show')
+               }
+           });
+       });
+        
+       $(".btn-close").click(function(){
             modal.modal('hide');
-        });
-
-        function openModal(id) {
+       });
+       
+       $('#addCarId').on('click', function () {
+           $.ajax({
+              type: 'GET',
+              url : '/Car/Save',
+              success: function (response) {
+                  $('.modal-dialog').removeClass("modal-lg");
+                  modal.find(".modal-body").html(response);
+                  modal.modal('show')
+              },
+              failure: function () {
+                modal.modal('hide')
+              },
+              error: function (response) {
+                  alert(response.responseText);
+              }
+          });
+       });
+       
+        function openModal(id){
             $.ajax({
                 type: 'GET',
-                url: '/Car/GetCar',
+                url : '/Car/GetCar',
                 data: { "id": id },
                 success: function (response) {
+                    $('.modal-dialog').removeClass("modal-lg");
                     modal.find(".modal-body").html(response);
                     modal.modal('show')
                 },
                 failure: function () {
-                    modal.modal('hide')
+                  modal.modal('hide')
                 },
                 error: function (response) {
                     alert(response.responseText);
                 }
             });
         };
-
-        const hideCardElement = $('#hideCardsId');
-        const showCardElement = $('#showCardsId');
-        const cardElement = $('.card');
-
-        const interval = 2000;
-
-        hideCardElement.click(function () {
-            hideCardElement.hide(interval);
-            showCardElement.show(interval);
-            cardElement.hide(interval);
-        });
-
-        showCardElement.click(function () {
-            hideCardElement.show(interval);
-            showCardElement.hide(interval);
-            cardElement.show(interval);
-        });
+                
     </script>
 }
