@@ -16,6 +16,8 @@ namespace Automarket.DAL
 
         public DbSet<User> Users { get; set; }
 
+        public DbSet<Profile> Profiles { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
 
@@ -40,6 +42,17 @@ namespace Automarket.DAL
                     .ValueGeneratedOnAdd(); //Автоинкремент
 
                 builder.Property(x => x.Name).HasMaxLength(100).IsRequired();
+            });
+            // маппинг Profile
+            modelBuilder.Entity<Profile>(builder =>
+            {
+                builder.ToTable("Profiles").HasKey(x => x.Id);
+
+                builder.Property(x => x.Id).ValueGeneratedOnAdd();
+
+                builder.Property(x => x.Age);
+                builder.Property(x => x.Address).HasMaxLength(250);
+                builder.Property(x => x.UserId);
             });
         }
     }
