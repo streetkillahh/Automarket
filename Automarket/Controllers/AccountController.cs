@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Automarket.Controllers
 {
+    // Отвечает за регистрацию/авторизацию пользователя
     public class AccountController : Controller
     {
         private readonly IAccountService _accountService;
@@ -53,6 +54,7 @@ namespace Automarket.Controllers
 
                     return RedirectToAction("Index", "Home");
                 }
+                ModelState.AddModelError("", response.Description);
             }
             return View(model);
         }
