@@ -11,9 +11,8 @@ namespace Automarket.Domain.ViewModels.Profile
         public short Age { get; set; }
 
         [Required(ErrorMessage = "Укажите адрес")]
-        [MinLength(5, ErrorMessage = "Минимальная длина должна быть более 5 символов")]
-        [MaxLength(250, ErrorMessage = "Максимальная длина не должна превышать 250 символов")]
-
+        [MinLength(5, ErrorMessage = "Минимальная длина должна быть больше 5 символов")]
+        [MaxLength(250, ErrorMessage = "Максимальная длина должна быть меньше 250 символов")]
         public string Address { get; set; }
     }
 }
