@@ -1,36 +1,64 @@
-﻿@using Automarket.Domain.Enum
-@using Automarket.Domain.Extensions
-@model Automarket.Domain.ViewModels.User.UserViewModel
+﻿@model IEnumerable<Automarket.Domain.ViewModels.User.UserViewModel>
 
-<form>
-    <div class="row">
-        <div class="form-group col-md-2">
-            <label asp-for="@Model.Id" class="col-form-label"></label>
-            <input type="text" class="form-control" asp-for="@Model.Id" readonly>
-        </div>
-        <div class="form-group col-md-4">
-            <label asp-for="@Model.Name" class="col-form-label"></label>
-            <input type="text" class="form-control" asp-for="@Model.Name">
-        </div>
-        <div class="form-group col-md-6">
-            <label asp-for="@Model.Role" class="col-form-label"></label>
-            <select class="form-control" id="selectRoleId">
-                <option value="@Role.User">@Role.User.GetDisplayName()</option>
-                <option value="@Role.Moderator">@Role.Moderator.GetDisplayName()</option>
-                <option value="@Role.Admin">@Role.Admin.GetDisplayName()</option>
-            </select>
-        </div>
-    </div>
-    <div class="row">
-        <div class="form-group col-md-12">
-            <label asp-for="@Model.Address" class="col-form-label"></label>
-            <textarea type="text" class="form-control" asp-for="@Model.Address"></textarea>
-        </div>
-    </div>
-</form>
+@{
+    Layout = "_Layout";
+    ViewBag.Title = "Пользователи";
+}
 
-<style>
-    label {
-        color: black;
-    }
-</style>
+<div style="padding: 10px;"></div>
+<div class="card col-md-12">
+    <table class="table table-striped">
+        <thead class="table-light">
+        <tr>
+            <th scope="col">Id</th>
+            <th scope="col">Логин</th>
+            <th scope="col">Роль</th>
+            <th scope="col">#</th>
+            <th scope="col">#</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var user in @Model)
+        {
+            <tr>
+                <td>@user.Id</td>
+                <td>@user.Name</td>
+                <td>@user.Role</td>
+                <td>
+                    <form asp-controller="User" asp-action="DeleteUser" asp-route-id="@user.Id" method="post">
+                        <button type="submit" class="btn btn-sm btn-danger">
+                            Удалить
+                        </button>
+                    </form>
+                </td>
+                <td>
+                        <button type="submit" class="btn btn-sm btn-primary" onclick="openModal({ url: '@Url.Action("", "User")', data: @user.Id })">
+                        Посмотреть
+                    </button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@section pageScripts
+{
+    <script>
+        function model() {
+            return {
+                name: $('input#Name').val(),
+                role: $('#selectRoleId').val(),
+                address: $('textarea#Address').val(),
+            }
+        };
+        
+       $('#saveBtn').on('click', function () {
+           $.ajax({
+               url: '@Url.Action("Save")',
+               type: 'POST',
+               data: model(),
+           }) 
+      });
+    </script>
+}

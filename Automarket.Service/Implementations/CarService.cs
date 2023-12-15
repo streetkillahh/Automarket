@@ -104,7 +104,8 @@ namespace Automarket.Service.Implementations
                         Price = x.Price,
                         TypeCar = x.TypeCar.GetDisplayName()
                     })
-                    .Where(x => EF.Functions.Like(x.Name, $"%{term}%"))
+                    // функция Like ищет элементы в заданном шаблоне
+                    .Where(x => EF.Functions.Like(x.Name, $"%{term}%")) 
                     .ToDictionaryAsync(x => x.Id, t => t.Name);
 
                 baseResponse.Data = cars;

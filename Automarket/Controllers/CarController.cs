@@ -82,7 +82,7 @@ namespace Automarket.Controllers
             return View();
         }
         
-        
+        // для получения конкретного объекта, который = id
         [HttpGet]
         public async Task<ActionResult> GetCar(int id, bool isJson)
         {
@@ -93,7 +93,8 @@ namespace Automarket.Controllers
             }
             return PartialView("GetCar", response.Data);
         }
-        
+
+        // для получения объектов из БД
         [HttpPost]
         public async Task<IActionResult> GetCar(string term, int page = 1, int pageSize = 5)
         {

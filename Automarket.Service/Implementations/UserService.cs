@@ -17,28 +17,29 @@ namespace Automarket.Service.Implementations
 {
     public class UserService : IUserService
     {
+        private readonly ILogger<UserService> _logger;
         private readonly IBaseRepository<User> _userRepository;
-        private readonly ILogger<AccountService> _logger;
 
-        public UserService(IBaseRepository<User> userRepository,
-            ILogger<AccountService> logger)
+        public UserService(ILogger<UserService> logger, IBaseRepository<User> userRepository)
         {
-            _userRepository = userRepository;
             _logger = logger;
+            _userRepository = userRepository;
         }
 
         public async Task<BaseResponse<IEnumerable<UserViewModel>>> GetUsers()
         {
             try
             {
-                var users = _userRepository.GetAll()
-                    .AsEnumerable()
+                var users = await _userRepository.GetAll()
+                    .Where(x => x.Role != Role.Admin)
                     .Select(x => new UserViewModel()
                     {
                         Id = x.Id,
                         Name = x.Name,
                         Role = x.Role.GetDisplayName()
-                    });
+                    })
+                    .ToListAsync();
+                _logger.LogInformation($"[UserService.GetUsers] получено элементов {users.Count}");
                 return new BaseResponse<IEnumerable<UserViewModel>>()
                 {
                     Data = users,
@@ -47,85 +48,44 @@ namespace Automarket.Service.Implementations
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"[GetUsers]: {ex.Message}");
+                _logger.LogError(ex, $"[UserSerivce.GetUsers] error: {ex.Message}");
                 return new BaseResponse<IEnumerable<UserViewModel>>()
                 {
-                    Description = ex.Message,
-                    StatusCode = StatusCode.InternalServerError
+                    StatusCode = StatusCode.InternalServerError,
+                    Description = $"Внутренняя ошибка: {ex.Message}"
                 };
             }
         }
 
-        public async Task<BaseResponse<UserViewModel>> GetUser(long id)
-        {
-            try
-            {
-                var user = _userRepository.GetAll()
-                    .Select(x => new
-                    {
-                        x.Id,
-                        x.Name,
-                        x.Profile.Age,
-                        x.Profile.Address,
-                        x.Role
-                    })
-                    .AsEnumerable()
-                    .Select(x => new UserViewModel()
-                    {
-                        Id = x.Id,
-                        Name = x.Name,
-                        Age = x.Age,
-                        Address = x.Address,
-                        Role = x.Role.GetDisplayName()
-                    })
-                    .FirstOrDefault();
-
-                return new BaseResponse<UserViewModel>()
-                {
-                    Data = user,
-                    StatusCode = StatusCode.OK
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"[GetUser]: {ex.Message}");
-                return new BaseResponse<UserViewModel>()
-                {
-                    Description = ex.Message,
-                    StatusCode = StatusCode.InternalServerError
-                };
-            }
-        }
-
-        public async Task<BaseResponse<User>> Delete(long id)
+        public async Task<IBaseResponse<bool>> DeleteUser(long id)
         {
             try
             {
                 var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
                 if (user == null)
                 {
-                    return new BaseResponse<User>()
+                    return new BaseResponse<bool>
                     {
-                        Description = "Пользователь не найден",
-                        StatusCode = StatusCode.EntityNotFound
+                        StatusCode = StatusCode.EntityNotFound,
+                        Data = false
                     };
                 }
-
                 await _userRepository.Delete(user);
+                _logger.LogInformation($"[UserService.DeleteUser] пользователь удален");
 
-                return new BaseResponse<User>()
+                return new BaseResponse<bool>
                 {
-                    Description = "Пользователь удалён",
-                    StatusCode = StatusCode.OK
+                    StatusCode = StatusCode.OK,
+                    Data = true
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"[Delete]: {ex.Message}");
-                return new BaseResponse<User>()
+                _logger.LogError(ex, $"[UserSerivce.DeleteUser] error: {ex.Message}");
+                return new BaseResponse<bool>()
                 {
-                    Description = ex.Message,
-                    StatusCode = StatusCode.InternalServerError
+                    StatusCode = StatusCode.InternalServerError,
+                    Description = $"Внутренняя ошибка: {ex.Message}"
                 };
             }
         }

@@ -7,7 +7,7 @@
 
         public string Address { get; set; }
 
-        public short Age { get; set; }
+        public byte Age { get; set; }
 
         public long UserId { get; set; }
 

@@ -25,14 +25,18 @@ namespace Automarket.DAL.Repositories
             return _db.Profiles;
         }
 
-        public Task Delete(Profile entity)
+        public async Task Delete(Profile entity)
         {
-            throw new System.NotImplementedException();
+            _db.Profiles.Remove(entity);
+            await _db.SaveChangesAsync();
         }
 
-        public Task<Profile> Update(Profile entity)
+        public async Task<Profile> Update(Profile entity)
         {
-            throw new System.NotImplementedException();
+            _db.Profiles.Update(entity);
+            await _db.SaveChangesAsync();
+
+            return entity;
         }
     }
 }
