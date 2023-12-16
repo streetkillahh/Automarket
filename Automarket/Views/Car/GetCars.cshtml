@@ -34,7 +34,7 @@
         <button class='btn btn-primary' id='compareBtnId'>Сравнение</button>
         @if (User.IsInRole("Admin"))
         {
-            <button class='btn btn-success' id='addCarId'>Добавить</button>   
+            <button class='btn btn-success' id='addCarId'>Добавить</button>
         }
     </div>
 </div>
@@ -45,14 +45,14 @@
     <div class="card col-md-12">
         <div class="row g-0">
             <div class="col-md-4">
-                <img src="https://images.wallpaperscraft.ru/image/single/bmw_fary_podsvetka_137326_1280x720.jpg" 
+                <img src="https://images.wallpaperscraft.ru/image/single/bmw_fary_podsvetka_137326_1280x720.jpg"
                      class="img-fluid rounded-start rounded">
             </div>
             <div class="col-md-8">
                 <div class="card-body">
                     <h5 class="card-title text-center">Список машин пуст :(</h5>
                     <p class="card-text">
-                        Список пополниться позже, не расстраивайтесь
+                        Список пополнится позже, не расстраивайтесь
                     </p>
                 </div>
             </div>
@@ -98,116 +98,95 @@ else
                             <li class="list-group-item">Модель: @car.Model</li>
                         </ul>
                         <div class="card-body">
-                            <button class="btn btn-primary" onclick="openModal(@car.Id)" asp-action="GetCar" value="@car.Id" asp-route-id="@car.Id" 
-                                    data-toggle="ajax-modal" data-target="Modal">Открыть</button>
-                             @if (User.IsInRole("Admin"))
-                             {
-                                 <a asp-controller="Car" asp-action="Delete" asp-route-id="@car.Id" class="btn btn-danger">Удалить</a>
-                             }
+                            <button class="btn btn-primary" onclick="openModal({ url: '/Car/GetCar', data: '@car.Id' })"
+                                    data-toggle="ajax-modal" data-target="Modal">
+                                Открыть
+                            </button>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a asp-controller="Car" asp-action="Delete" asp-route-id="@car.Id" class="btn btn-danger">Удалить</a>
+                            }
                         </div>
                     </div>
                 </div>
             </div>
         }
-    </div>   
-}
-
-<div class="modal fade" id="modal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Информация об автомобиле</h5>
-      </div>
-        <div class="modal-body">
-
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-close btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-            @if (User.IsInRole("Admin"))
-            {
-                <button type="button" class="btn btn-primary" id="saveBtn">Сохранить</button>   
-            }
-        </div>
     </div>
-  </div>
-</div>
+}
 
 @section pageScripts {
 
+    <script src="~/js/modal.js"></script>
     <script>
-        let modal = $('#modal'); 
-    
+        let modal = $('#modal');
+
         function model() {
-            const model = {
+            return {
                 name: $('input#Name').val(),
                 model: $('input#Model').val(),
                 price: $('input#Price').val(),
                 description: $('input#Description').val(),
                 avatar: $('input#Avatar').val(),
-            }            
-            return model;
+            }
         };
-        
+
         $('#saveBtn').on('click', function () {
-           $.ajax({
-               url: '@Url.Action("Save")',
-               type: 'POST',
-               data: model(),
-           }) 
+            $.ajax({
+                url: '@Url.Action("Save")',
+                type: 'POST',
+                data: JSON.stringify(model),
+                success: function (response) {
+                    Swal.fire({
+                        title: 'Информация',
+                        text: response.description,
+                        icon: 'success',
+                        confirmButtonText: 'Окей'
+                    })
+                },
+                error: function (data) {
+                    Swal.fire({
+                        title: 'Информация',
+                        text: 'Ошибка валидации',
+                        icon: 'error',
+                        confirmButtonText: 'Окей'
+                    })
+                }
+            })
         });
-        
-       $('#compareBtnId').on('click', function (){
-           $.ajax({
-               type: 'GET',
-               url : '@Url.Action("Compare")',
-               success: function (response) {
-                   $('.modal-dialog').addClass("modal-lg");
-                   modal.find(".modal-body").html(response);
-                   modal.modal('show')
-               }
-           });
-       });
-        
-       $(".btn-close").click(function(){
-            modal.modal('hide');
-       });
-       
-       $('#addCarId').on('click', function () {
-           $.ajax({
-              type: 'GET',
-              url : '/Car/Save',
-              success: function (response) {
-                  $('.modal-dialog').removeClass("modal-lg");
-                  modal.find(".modal-body").html(response);
-                  modal.modal('show')
-              },
-              failure: function () {
-                modal.modal('hide')
-              },
-              error: function (response) {
-                  alert(response.responseText);
-              }
-          });
-       });
-       
-        function openModal(id){
+
+        $('#compareBtnId').on('click', function () {
             $.ajax({
                 type: 'GET',
-                url : '/Car/GetCar',
-                data: { "id": id },
+                url: '@Url.Action("Compare")',
+                success: function (response) {
+                    $('.modal-dialog').addClass("modal-lg");
+                    modal.find(".modal-body").html(response);
+                    modal.modal('show')
+                }
+            });
+        });
+
+        $(".btn-close").click(function () {
+            modal.modal('hide');
+        });
+
+        $('#addCarId').on('click', function () {
+            $.ajax({
+                type: 'GET',
+                url: '/Car/Save',
                 success: function (response) {
                     $('.modal-dialog').removeClass("modal-lg");
                     modal.find(".modal-body").html(response);
                     modal.modal('show')
                 },
                 failure: function () {
-                  modal.modal('hide')
+                    modal.modal('hide')
                 },
                 error: function (response) {
                     alert(response.responseText);
                 }
             });
-        };
-                
+        });
+
     </script>
 }

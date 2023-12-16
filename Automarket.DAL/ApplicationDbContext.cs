@@ -28,6 +28,8 @@ namespace Automarket.DAL
         {
             modelBuilder.Entity<User>(builder =>
             {
+                builder.ToTable("Users").HasKey(x => x.Id); //Primary Key
+
                 builder.HasData(new User
                 {
                     Id = 1,
@@ -36,12 +38,16 @@ namespace Automarket.DAL
                     Role = Role.Admin
                 });
 
-                builder.ToTable("Users").HasKey(x => x.Id); //Primary Key
+                
 
-                builder.Property(x => x.Id)
-                    .ValueGeneratedOnAdd(); //Автоинкремент
+                builder.Property(x => x.Id).ValueGeneratedOnAdd(); //Автоинкремент
 
+                builder.Property(x => x.Password).IsRequired();
                 builder.Property(x => x.Name).HasMaxLength(100).IsRequired();
+
+                builder.HasOne(x => x.Profile).WithOne(x => x.User) //связь 1к1
+                .HasPrincipalKey<User>(x => x.Id)
+                .OnDelete(DeleteBehavior.Cascade); // для удаления профиля при удалении пользователя
             });
             // маппинг Profile
             modelBuilder.Entity<Profile>(builder =>
@@ -50,8 +56,14 @@ namespace Automarket.DAL
 
                 builder.Property(x => x.Id).ValueGeneratedOnAdd();
 
+                builder.HasData(new Profile()
+                {
+                    Id = 1,
+                    UserId = 1
+                });
+
                 builder.Property(x => x.Age);
-                builder.Property(x => x.Address).HasMaxLength(250);
+                builder.Property(x => x.Address).HasMaxLength(200).IsRequired(false);
                 builder.Property(x => x.UserId);
             });
         }

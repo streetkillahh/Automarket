@@ -1,9 +1,10 @@
-﻿using System.IO;
+﻿﻿using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Automarket.Domain.ViewModels.Car;
 using Automarket.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Automarket.Controllers
@@ -18,23 +19,12 @@ namespace Automarket.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCars()
+        public IActionResult GetCars()
         {
-            var response = await _carService.GetCars();
+            var response = _carService.GetCars();
             if (response.StatusCode == Domain.Enum.StatusCode.OK)
             {
-                return View(response.Data.ToList());
-            }
-            return View("Error", $"{response.Description}");
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetCar(int id)
-        {
-            var response = await _carService.GetCar(id);
-            if (response.StatusCode == Domain.Enum.StatusCode.OK)
-            {
-                return View(response.Data);
+                return View(response.Data);   
             }
             return View("Error", $"{response.Description}");
         }
@@ -50,20 +40,24 @@ namespace Automarket.Controllers
             return View("Error", $"{response.Description}");
         }
 
+        public IActionResult Compare() => PartialView();
+        
         [HttpGet]
         public async Task<IActionResult> Save(int id)
         {
-            if (id == 0)
-                return View();
+            if (id == 0) 
+                return PartialView();
 
             var response = await _carService.GetCar(id);
             if (response.StatusCode == Domain.Enum.StatusCode.OK)
             {
-                return View(response.Data);
+                return PartialView(response.Data);
             }
-            return View("Error", $"{response.Description}");
+            ModelState.AddModelError("", response.Description);
+            return PartialView();
         }
 
+        // string Name, string Model, double Speed, string Description, decimal Price, string TypeCar, IFormFile Avatar
         [HttpPost]
         public async Task<IActionResult> Save(CarViewModel model)
         {
@@ -83,9 +77,36 @@ namespace Automarket.Controllers
                 {
                     await _carService.Edit(model.Id, model);
                 }
-                return RedirectToAction("GetCars");
+                return RedirectToAction("GetCars");   
             }
             return View();
+        }
+        
+        // для получения конкретного объекта, который = id
+        [HttpGet]
+        public async Task<ActionResult> GetCar(int id, bool isJson)
+        {
+            var response = await _carService.GetCar(id);
+            if (isJson)
+            {
+                return Json(response.Data);
+            }
+            return PartialView("GetCar", response.Data);
+        }
+
+        // для получения объектов из БД
+        [HttpPost]
+        public async Task<IActionResult> GetCar(string term, int page = 1, int pageSize = 5)
+        {
+            var response = await _carService.GetCar(term);
+            return Json(response.Data);
+        }
+        
+        [HttpPost]
+        public JsonResult GetTypes()
+        {
+            var types = _carService.GetTypes();
+            return Json(types.Data);
         }
     }
 }

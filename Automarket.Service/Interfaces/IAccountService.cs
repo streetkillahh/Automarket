@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+﻿﻿using System.Security.Claims;
 using System.Threading.Tasks;
 using Automarket.Domain.Response;
 using Automarket.Domain.ViewModels.Account;
@@ -10,5 +10,6 @@ namespace Automarket.Service.Interfaces
         Task<BaseResponse<ClaimsIdentity>> Register(RegisterViewModel model);
 
         Task<BaseResponse<ClaimsIdentity>> Login(LoginViewModel model);
+        Task<BaseResponse<bool>> ChangePassword(ChangePasswordViewModel model);
     }
 }
