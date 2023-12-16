@@ -1,4 +1,5 @@
-﻿using Automarket.Service.Interfaces;
+﻿using Automarket.Domain.ViewModels.Profile;
+using Automarket.Service.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Automarket.Controllers
@@ -11,9 +12,25 @@ namespace Automarket.Controllers
             _profileService = profileService;
         }
 
-        public IActionResult Detail()
+        [HttpPost]
+        public async Task<IActionResult> Save(ProfileViewModel model)
         {
-            _profileService.GetProfile("streetkillah");
+            ModelState.Remove("UserName");
+            if (ModelState.IsValid)
+            {
+                await _profileService.Save(model);
+            }
+            return RedirectToAction("Detail");
+        }
+
+        public async Task<IActionResult> Detail()
+        {
+            var userName = User.Identity.Name;
+            var response = await _profileService.GetProfile(userName);
+            if (response.StatusCode == Domain.Enum.StatusCode.OK)
+            {
+                return View(response.Data);
+            }
             return View();
         }
     }
