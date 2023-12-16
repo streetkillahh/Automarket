@@ -19,12 +19,14 @@ namespace Automarket.Service.Implementations
     {
         private readonly IBaseRepository<User> _userRepository;
         private readonly ILogger<AccountService> _logger;
-        
+        private readonly IBaseRepository<Profile> _proFileRepository;
+
         public AccountService(IBaseRepository<User> userRepository,
-            ILogger<AccountService> logger)
+            ILogger<AccountService> logger, IBaseRepository<Profile> proFileRepository)
         {
             _userRepository = userRepository;
             _logger = logger;
+            _proFileRepository = proFileRepository;
         }
 
         public async Task<BaseResponse<ClaimsIdentity>> Register(RegisterViewModel model)
@@ -47,7 +49,13 @@ namespace Automarket.Service.Implementations
                     Password = HashPasswordHelper.HashPassowrd(model.Password),
                 };
 
+                var profile = new Profile()
+                {
+                    UserId = user.Id,
+                };
+
                 await _userRepository.Create(user);
+                await _proFileRepository.Create(profile);
                 var result = Authenticate(user);
 
                 return new BaseResponse<ClaimsIdentity>()
@@ -85,7 +93,7 @@ namespace Automarket.Service.Implementations
                 {
                     return new BaseResponse<ClaimsIdentity>()
                     {
-                        Description = "Неверный пароль"
+                        Description = "Неверный пароль или логин"
                     };
                 }
                 var result = Authenticate(user);
@@ -100,6 +108,42 @@ namespace Automarket.Service.Implementations
             {
                 _logger.LogError(ex, $"[Login]: {ex.Message}");
                 return new BaseResponse<ClaimsIdentity>()
+                {
+                    Description = ex.Message,
+                    StatusCode = StatusCode.InternalServerError
+                };
+            }
+        }
+
+        public async Task<BaseResponse<bool>> ChangePassword(ChangePasswordViewModel model)
+        {
+            try
+            {
+                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Name == model.UserName);
+                if (user == null)
+                {
+                    return new BaseResponse<bool>()
+                    {
+                        StatusCode = StatusCode.EntityNotFound,
+                        Description = "Пользователь не найден"
+                    };
+                }
+
+                user.Password = HashPasswordHelper.HashPassowrd(model.NewPassword);
+                await _userRepository.Update(user);
+
+                return new BaseResponse<bool>()
+                {
+                    Data = true,
+                    StatusCode = StatusCode.OK,
+                    Description = "Пароль обновлен"
+                };
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"[ChangePassword]: {ex.Message}");
+                return new BaseResponse<bool>()
                 {
                     Description = ex.Message,
                     StatusCode = StatusCode.InternalServerError

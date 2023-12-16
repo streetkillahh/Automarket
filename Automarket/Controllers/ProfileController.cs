@@ -11,10 +11,10 @@ namespace Automarket.Controllers
         {
             _profileService = profileService;
         }
-
         [HttpPost]
         public async Task<IActionResult> Save(ProfileViewModel model)
         {
+            ModelState.Remove("Id");
             ModelState.Remove("UserName");
             if (ModelState.IsValid)
             {

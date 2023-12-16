@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using System.Threading.Tasks;
 using Automarket.Domain.ViewModels.Account;
 using Automarket.Service.Interfaces;
 using Microsoft.AspNetCore.Authentication;
@@ -64,6 +63,22 @@ namespace Automarket.Controllers
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var response = await _accountService.ChangePassword(model);
+                if (response.StatusCode == Domain.Enum.StatusCode.OK)
+                {
+                    return Json(new { description = response.Description });
+                }
+            }
+            var modelError = ModelState.Values.SelectMany(v => v.Errors);
+
+            return StatusCode(StatusCodes.Status500InternalServerError, new { modelError.FirstOrDefault().ErrorMessage });
         }
     }
 }
