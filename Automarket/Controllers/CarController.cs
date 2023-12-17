@@ -1,6 +1,7 @@
-﻿﻿using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Automarket.Domain.Extensions;
 using Automarket.Domain.ViewModels.Car;
 using Automarket.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -24,7 +25,7 @@ namespace Automarket.Controllers
             var response = _carService.GetCars();
             if (response.StatusCode == Domain.Enum.StatusCode.OK)
             {
-                return View(response.Data);   
+                return View(response.Data);
             }
             return View("Error", $"{response.Description}");
         }
@@ -41,11 +42,11 @@ namespace Automarket.Controllers
         }
 
         public IActionResult Compare() => PartialView();
-        
+
         [HttpGet]
         public async Task<IActionResult> Save(int id)
         {
-            if (id == 0) 
+            if (id == 0)
                 return PartialView();
 
             var response = await _carService.GetCar(id);
@@ -77,11 +78,13 @@ namespace Automarket.Controllers
                 {
                     await _carService.Edit(model.Id, model);
                 }
-                return RedirectToAction("GetCars");   
+                return RedirectToAction("GetCars");
             }
-            return View();
+            var errorMessage = ModelState.Values
+                .SelectMany(v => v.Errors.Select(x => x.ErrorMessage)).ToList().Join();
+            return StatusCode(StatusCodes.Status500InternalServerError, new { errorMessage });
         }
-        
+
         // для получения конкретного объекта, который = id
         [HttpGet]
         public async Task<ActionResult> GetCar(int id, bool isJson)
@@ -93,7 +96,6 @@ namespace Automarket.Controllers
             }
             return PartialView("GetCar", response.Data);
         }
-
         // для получения объектов из БД
         [HttpPost]
         public async Task<IActionResult> GetCar(string term, int page = 1, int pageSize = 5)
@@ -101,7 +103,7 @@ namespace Automarket.Controllers
             var response = await _carService.GetCar(term);
             return Json(response.Data);
         }
-        
+
         [HttpPost]
         public JsonResult GetTypes()
         {

@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,8 +26,8 @@ namespace Automarket.Service.Implementations
         {
             try
             {
-                var types = ((TypeCar[]) Enum.GetValues(typeof(TypeCar)))
-                    .ToDictionary(k => (int) k, t => t.GetDisplayName());
+                var types = ((TypeCar[])Enum.GetValues(typeof(TypeCar)))
+                    .ToDictionary(k => (int)k, t => t.GetDisplayName());
 
                 return new BaseResponse<Dictionary<int, string>>()
                 {
@@ -44,8 +44,8 @@ namespace Automarket.Service.Implementations
                 };
             }
         }
-        
-        public async Task<IBaseResponse<CarViewModel>> GetCar(int id)
+
+        public async Task<IBaseResponse<CarViewModel>> GetCar(long id)
         {
             try
             {
@@ -87,9 +87,9 @@ namespace Automarket.Service.Implementations
             }
         }
 
-        public async Task<BaseResponse<Dictionary<int, string>>> GetCar(string term)
+        public async Task<BaseResponse<Dictionary<long, string>>> GetCar(string term)
         {
-            var baseResponse = new BaseResponse<Dictionary<int, string>>();
+            var baseResponse = new BaseResponse<Dictionary<long, string>>();
             try
             {
                 var cars = await _carRepository.GetAll()
@@ -104,8 +104,7 @@ namespace Automarket.Service.Implementations
                         Price = x.Price,
                         TypeCar = x.TypeCar.GetDisplayName()
                     })
-                    // функция Like ищет элементы в заданном шаблоне
-                    .Where(x => EF.Functions.Like(x.Name, $"%{term}%")) 
+                    .Where(x => EF.Functions.Like(x.Name, $"%{term}%"))
                     .ToDictionaryAsync(x => x.Id, t => t.Name);
 
                 baseResponse.Data = cars;
@@ -113,7 +112,7 @@ namespace Automarket.Service.Implementations
             }
             catch (Exception ex)
             {
-                return new BaseResponse<Dictionary<int, string>>()
+                return new BaseResponse<Dictionary<long, string>>()
                 {
                     Description = ex.Message,
                     StatusCode = StatusCode.InternalServerError
@@ -126,7 +125,7 @@ namespace Automarket.Service.Implementations
             try
             {
                 var car = new Car()
-                {    
+                {
                     Name = model.Name,
                     Model = model.Model,
                     Description = model.Description,
@@ -135,7 +134,7 @@ namespace Automarket.Service.Implementations
                     TypeCar = (TypeCar)Convert.ToInt32(model.TypeCar),
                     Price = model.Price,
                     Avatar = imageData
-                }; 
+                };
                 await _carRepository.Create(car);
 
                 return new BaseResponse<Car>()
@@ -154,7 +153,7 @@ namespace Automarket.Service.Implementations
             }
         }
 
-        public async Task<IBaseResponse<bool>> DeleteCar(int id)
+        public async Task<IBaseResponse<bool>> DeleteCar(long id)
         {
             try
             {
@@ -169,7 +168,7 @@ namespace Automarket.Service.Implementations
                     };
                 }
 
-                /*await _carRepository.Delete(car);*/
+                await _carRepository.Delete(car);
 
                 return new BaseResponse<bool>()
                 {
@@ -187,7 +186,7 @@ namespace Automarket.Service.Implementations
             }
         }
 
-        public async Task<IBaseResponse<Car>> Edit(int id, CarViewModel model)
+        public async Task<IBaseResponse<Car>> Edit(long id, CarViewModel model)
         {
             try
             {
@@ -205,7 +204,7 @@ namespace Automarket.Service.Implementations
                 car.Model = model.Model;
                 car.Price = model.Price;
                 car.Speed = model.Speed;
-                car.DateCreate = DateTime.ParseExact(model.DateCreate,"yyyyMMdd HH:mm",null);
+                car.DateCreate = DateTime.ParseExact(model.DateCreate, "yyyyMMdd HH:mm", null);
                 car.Name = model.Name;
 
                 await _carRepository.Update(car);
@@ -241,7 +240,7 @@ namespace Automarket.Service.Implementations
                         StatusCode = StatusCode.OK
                     };
                 }
-                
+
                 return new BaseResponse<List<Car>>()
                 {
                     Data = cars,
@@ -257,5 +256,5 @@ namespace Automarket.Service.Implementations
                 };
             }
         }
-    }   
+    }
 }

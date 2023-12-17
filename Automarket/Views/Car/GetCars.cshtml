@@ -5,7 +5,6 @@
     ViewBag.Title = "Список автомобилей";
     Layout = "_Layout";
 }
-
 @{
     var cardStyle = "col-md-12";
     if (Model != null)
@@ -21,14 +20,12 @@
         }
     }
 }
-
 <style>
     .card-buttons-group {
         text-align: right;
         padding: 10px;
     }
 </style>
-
 <div class="card col-md-12" style="margin: 10px;">
     <div class="card-buttons-group">
         <button class='btn btn-primary' id='compareBtnId'>Сравнение</button>
@@ -38,7 +35,6 @@
         }
     </div>
 </div>
-
 <div style="padding: 10px;"></div>
 @if (Model == null)
 {
@@ -106,6 +102,7 @@ else
                             {
                                 <a asp-controller="Car" asp-action="Delete" asp-route-id="@car.Id" class="btn btn-danger">Удалить</a>
                             }
+                            <a asp-controller="Order" asp-action="CreateOrder" asp-route-id="@car.Id" class="btn btn-success">В корзину</a>
                         </div>
                     </div>
                 </div>
@@ -113,28 +110,16 @@ else
         }
     </div>
 }
-
 @section pageScripts {
-
     <script src="~/js/modal.js"></script>
     <script>
         let modal = $('#modal');
-
-        function model() {
-            return {
-                name: $('input#Name').val(),
-                model: $('input#Model').val(),
-                price: $('input#Price').val(),
-                description: $('input#Description').val(),
-                avatar: $('input#Avatar').val(),
-            }
-        };
 
         $('#saveBtn').on('click', function () {
             $.ajax({
                 url: '@Url.Action("Save")',
                 type: 'POST',
-                data: JSON.stringify(model),
+                // data: JSON.stringify(model),
                 success: function (response) {
                     Swal.fire({
                         title: 'Информация',

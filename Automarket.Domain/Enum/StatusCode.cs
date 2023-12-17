@@ -8,6 +8,7 @@ namespace Automarket.Domain.Enum
 {
     public enum StatusCode
     {
+        OrderNotFound = 20,
         EntityNotFound = 400,
         UserAlreadyExists = 300,
         OK = 200,

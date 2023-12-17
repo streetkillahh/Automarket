@@ -18,6 +18,10 @@ namespace Automarket.DAL
 
         public DbSet<Profile> Profiles { get; set; }
 
+        public DbSet<Basket> Baskets { get; set; }
+
+        public DbSet<Order> Orders { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
 
@@ -48,7 +52,29 @@ namespace Automarket.DAL
                 builder.HasOne(x => x.Profile).WithOne(x => x.User) //связь 1к1
                 .HasPrincipalKey<User>(x => x.Id)
                 .OnDelete(DeleteBehavior.Cascade); // для удаления профиля при удалении пользователя
+                
+                builder.HasOne(x => x.Basket).WithOne(x => x.User)
+                .HasPrincipalKey<User>(x => x.Id)
+                .OnDelete(DeleteBehavior.Cascade);
             });
+
+            modelBuilder.Entity<Car>(builder =>
+            {
+                builder.ToTable("Cars").HasKey(x => x.Id);
+
+                builder.HasData(new Car
+                {
+                    Id = 1,
+                    Name = "BMW X6",
+                    Description = "BMW X6 отличается уникальным внешним видом и спортивной динамичностью благодаря мощному двигателю, точно настроенной подвеске и широкой комплектации, в которую входит в том числе и пакет xOffroad.",
+                    DateCreate = DateTime.Now,
+                    Speed = 230,
+                    Model = "BMW",
+                    Avatar = null,
+                    TypeCar = TypeCar.PassengerCar
+                });
+            });
+
             // маппинг Profile
             modelBuilder.Entity<Profile>(builder =>
             {
@@ -56,15 +82,32 @@ namespace Automarket.DAL
 
                 builder.Property(x => x.Id).ValueGeneratedOnAdd();
 
+                builder.Property(x => x.Age);
+                builder.Property(x => x.Address).HasMaxLength(200).IsRequired(false);
+
                 builder.HasData(new Profile()
                 {
                     Id = 1,
                     UserId = 1
                 });
+            });
 
-                builder.Property(x => x.Age);
-                builder.Property(x => x.Address).HasMaxLength(200).IsRequired(false);
-                builder.Property(x => x.UserId);
+            modelBuilder.Entity<Basket>(builder =>
+            {
+                builder.ToTable("Baskets").HasKey(x => x.Id);
+
+                builder.HasData(new Basket()
+                {
+                    Id = 1,
+                    UserId = 1
+                });
+            });
+
+            modelBuilder.Entity<Order>(builder =>
+            {
+                builder.ToTable("Orders").HasKey(x => x.Id);
+                builder.HasOne(r => r.Basket).WithMany(t => t.Orders)
+                    .HasForeignKey(r => r.BasketId);
             });
         }
     }

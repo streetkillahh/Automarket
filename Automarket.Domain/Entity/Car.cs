@@ -5,7 +5,7 @@ namespace Automarket.Domain.Entity
     // Создание сущности Car с добавлением атрибутов для БД
     public class Car
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         public string Name { get; set; }
 
