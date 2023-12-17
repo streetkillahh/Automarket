@@ -1,6 +1,8 @@
-﻿﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Automarket.Domain.Extensions;
 using Automarket.Domain.ViewModels.Car;
 using Automarket.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -24,7 +26,7 @@ namespace Automarket.Controllers
             var response = _carService.GetCars();
             if (response.StatusCode == Domain.Enum.StatusCode.OK)
             {
-                return View(response.Data);   
+                return View(response.Data);
             }
             return View("Error", $"{response.Description}");
         }
@@ -41,11 +43,11 @@ namespace Automarket.Controllers
         }
 
         public IActionResult Compare() => PartialView();
-        
+
         [HttpGet]
         public async Task<IActionResult> Save(int id)
         {
-            if (id == 0) 
+            if (id == 0)
                 return PartialView();
 
             var response = await _carService.GetCar(id);
@@ -59,29 +61,29 @@ namespace Automarket.Controllers
 
         // string Name, string Model, double Speed, string Description, decimal Price, string TypeCar, IFormFile Avatar
         [HttpPost]
-        public async Task<IActionResult> Save(CarViewModel model)
+        public async Task<IActionResult> Save(CarViewModel viewModel)
         {
+            ModelState.Remove("Id");
             ModelState.Remove("DateCreate");
             if (ModelState.IsValid)
             {
-                if (model.Id == 0)
+                if (viewModel.Id == 0)
                 {
                     byte[] imageData;
-                    using (var binaryReader = new BinaryReader(model.Avatar.OpenReadStream()))
+                    using (var binaryReader = new BinaryReader(viewModel.Avatar.OpenReadStream()))
                     {
-                        imageData = binaryReader.ReadBytes((int)model.Avatar.Length);
+                        imageData = binaryReader.ReadBytes((int)viewModel.Avatar.Length);
                     }
-                    await _carService.Create(model, imageData);
+                    await _carService.Create(viewModel, imageData);
                 }
                 else
                 {
-                    await _carService.Edit(model.Id, model);
+                    await _carService.Edit(viewModel.Id, viewModel);
                 }
-                return RedirectToAction("GetCars");   
             }
-            return View();
+            return RedirectToAction("GetCars");
         }
-        
+
         // для получения конкретного объекта, который = id
         [HttpGet]
         public async Task<ActionResult> GetCar(int id, bool isJson)
@@ -93,15 +95,14 @@ namespace Automarket.Controllers
             }
             return PartialView("GetCar", response.Data);
         }
-
         // для получения объектов из БД
         [HttpPost]
-        public async Task<IActionResult> GetCar(string term, int page = 1, int pageSize = 5)
+        public async Task<IActionResult> GetCar(string term)
         {
             var response = await _carService.GetCar(term);
             return Json(response.Data);
         }
-        
+
         [HttpPost]
         public JsonResult GetTypes()
         {

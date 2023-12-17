@@ -20,13 +20,16 @@ namespace Automarket.Service.Implementations
         private readonly IBaseRepository<User> _userRepository;
         private readonly ILogger<AccountService> _logger;
         private readonly IBaseRepository<Profile> _proFileRepository;
+        private readonly IBaseRepository<Basket> _basketRepository;
 
         public AccountService(IBaseRepository<User> userRepository,
-            ILogger<AccountService> logger, IBaseRepository<Profile> proFileRepository)
+            ILogger<AccountService> logger, IBaseRepository<Profile> proFileRepository,
+            IBaseRepository<Basket> basketRepository)
         {
             _userRepository = userRepository;
             _logger = logger;
             _proFileRepository = proFileRepository;
+            _basketRepository = basketRepository;
         }
 
         public async Task<BaseResponse<ClaimsIdentity>> Register(RegisterViewModel model)
@@ -49,13 +52,20 @@ namespace Automarket.Service.Implementations
                     Password = HashPasswordHelper.HashPassowrd(model.Password),
                 };
 
+                await _userRepository.Create(user);
+
                 var profile = new Profile()
                 {
                     UserId = user.Id,
                 };
 
-                await _userRepository.Create(user);
+                var basket = new Basket()
+                {
+                    UserId = user.Id
+                };
+
                 await _proFileRepository.Create(profile);
+                await _basketRepository.Create(basket);
                 var result = Authenticate(user);
 
                 return new BaseResponse<ClaimsIdentity>()

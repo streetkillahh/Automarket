@@ -14,5 +14,7 @@ namespace Automarket.Domain.Entity
         public Role Role { get; set; }
 
         public Profile Profile { get; set; }
+
+        public Basket Basket { get; set; }
     }
 }

@@ -22,13 +22,39 @@ namespace Automarket.DAL.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Automarket.Domain.Entity.Basket", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Baskets", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            UserId = 1L
+                        });
+                });
+
             modelBuilder.Entity("Automarket.Domain.Entity.Car", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<byte[]>("Avatar")
                         .HasColumnType("varbinary(max)");
@@ -59,7 +85,60 @@ namespace Automarket.DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Cars");
+                    b.ToTable("Cars", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            DateCreate = new DateTime(2023, 12, 17, 15, 15, 25, 413, DateTimeKind.Local).AddTicks(4613),
+                            Description = "BMW X6 отличается уникальным внешним видом и спортивной динамичностью благодаря мощному двигателю, точно настроенной подвеске и широкой комплектации, в которую входит в том числе и пакет xOffroad.",
+                            Model = "BMW",
+                            Name = "BMW X6",
+                            Price = 0m,
+                            Speed = 230.0,
+                            TypeCar = 0
+                        });
+                });
+
+            modelBuilder.Entity("Automarket.Domain.Entity.Order", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("BasketId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("CarId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MiddleName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BasketId");
+
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("Automarket.Domain.Entity.Profile", b =>
@@ -86,6 +165,14 @@ namespace Automarket.DAL.Migrations
                         .IsUnique();
 
                     b.ToTable("Profiles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            Age = (byte)0,
+                            UserId = 1L
+                        });
                 });
 
             modelBuilder.Entity("Automarket.Domain.Entity.User", b =>
@@ -122,6 +209,26 @@ namespace Automarket.DAL.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Automarket.Domain.Entity.Basket", b =>
+                {
+                    b.HasOne("Automarket.Domain.Entity.User", "User")
+                        .WithOne("Basket")
+                        .HasForeignKey("Automarket.Domain.Entity.Basket", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Automarket.Domain.Entity.Order", b =>
+                {
+                    b.HasOne("Automarket.Domain.Entity.Basket", "Basket")
+                        .WithMany("Orders")
+                        .HasForeignKey("BasketId");
+
+                    b.Navigation("Basket");
+                });
+
             modelBuilder.Entity("Automarket.Domain.Entity.Profile", b =>
                 {
                     b.HasOne("Automarket.Domain.Entity.User", "User")
@@ -133,8 +240,16 @@ namespace Automarket.DAL.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Automarket.Domain.Entity.Basket", b =>
+                {
+                    b.Navigation("Orders");
+                });
+
             modelBuilder.Entity("Automarket.Domain.Entity.User", b =>
                 {
+                    b.Navigation("Basket")
+                        .IsRequired();
+
                     b.Navigation("Profile")
                         .IsRequired();
                 });
