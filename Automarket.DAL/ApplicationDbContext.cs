@@ -34,12 +34,22 @@ namespace Automarket.DAL
             {
                 builder.ToTable("Users").HasKey(x => x.Id); //Primary Key
 
-                builder.HasData(new User
+                builder.HasData(new User[]
                 {
-                    Id = 1,
-                    Name = "streetkillah",
-                    Password = HashPasswordHelper.HashPassowrd("123123"),
-                    Role = Role.Admin
+                    new User()
+                    {
+                        Id = 1,
+                        Name = "Admin",
+                        Password = HashPasswordHelper.HashPassowrd("123456"),
+                        Role = Role.Admin
+                    },
+                    new User()
+                    {
+                        Id = 2,
+                        Name = "Moderator",
+                        Password = HashPasswordHelper.HashPassowrd("123123"),
+                        Role = Role.Moderator
+                    }
                 });
 
                 

@@ -5,7 +5,6 @@
     ViewBag.Title = "Пользователи";
 }
 
-
 <div class="card col-md-12" style="margin: 10px;">
     <div class="card-buttons-group">
         @if (User.IsInRole("Admin"))
@@ -20,10 +19,8 @@
     <table class="table table-striped">
         <thead class="table-light">
             <tr>
-                <th scope="col">Id</th>
                 <th scope="col">Логин</th>
                 <th scope="col">Роль</th>
-                <th scope="col">#</th>
                 <th scope="col">#</th>
             </tr>
         </thead>
@@ -31,7 +28,6 @@
             @foreach (var user in @Model)
             {
                 <tr>
-                    <td>@user.Id</td>
                     <td>@user.Name</td>
                     <td>@user.Role</td>
                     <td>
@@ -40,11 +36,6 @@
                                 Удалить
                             </button>
                         </form>
-                    </td>
-                    <td>
-                        <button type="submit" class="btn btn-sm btn-primary" onclick="openModal({ url: '@Url.Action("", "User")', data: @user.Id })">
-                            Посмотреть
-                        </button>
                     </td>
                 </tr>
             }
